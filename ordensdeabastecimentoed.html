@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard BI Multi-Base - Auditoria de Frota</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 0; }
+        
+        /* Menu Mestre Superior */
+        .master-nav { background-color: #1a252f; padding: 15px 20px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .master-btn { background: #34495e; color: #ecf0f1; border: none; padding: 10px 20px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .master-btn:hover { background: #3498db; }
+        .master-btn.active { background: #3498db; box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); }
+        
+        .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: #1a252f; margin-bottom: 5px; }
+        .header p { color: #7f8c8d; margin-top: 0; font-size: 15px; }
+        
+        /* Views de Cada Base */
+        .base-view { display: none; animation: fadeIn 0.4s; }
+        .base-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Sub-Menu (Tabs Internas) */
+        .tabs { display: flex; justify-content: center; margin-bottom: 25px; gap: 10px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; background: #e0e0e0; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; color: #444; transition: 0.3s; }
+        .tab-btn.active, .tab-btn:hover { background: #2c3e50; color: white; }
+        .tab-content { display: none; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .tab-content.active { display: block; }
+
+        /* KPIs */
+        .kpi-container { display: flex; gap: 20px; justify-content: space-between; margin-bottom: 30px; flex-wrap: wrap; }
+        .kpi-card { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e1e8ed; flex: 1; min-width: 200px; text-align: center; border-bottom: 5px solid #34495e; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .kpi-card h3 { margin: 0 0 10px 0; font-size: 12px; color: #7f8c8d; text-transform: uppercase; }
+        .kpi-card .value { font-size: 24px; font-weight: 800; line-height: 1.2; }
+        .kpi-card .sub-value { font-size: 13px; color: #95a5a6; margin-top: 8px; font-weight: 600; }
+        
+        /* Cores Específicas das Bases */
+        .theme-geral .kpi-card { border-bottom-color: #34495e; } .theme-geral .value { color: #34495e; }
+        .theme-edu .kpi-card { border-bottom-color: #2980b9; } .theme-edu .value { color: #2980b9; }
+        .theme-sau .kpi-card { border-bottom-color: #27ae60; } .theme-sau .value { color: #27ae60; }
+        .theme-pref .kpi-card { border-bottom-color: #8e44ad; } .theme-pref .value { color: #8e44ad; }
+
+        /* Gráficos e Tabelas */
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .chart-grid.single { grid-template-columns: 1fr; }
+        .chart-container { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e1e8ed; }
+        .chart-container h2 { font-size: 15px; text-align: center; color: #34495e; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #f0f2f5; padding-bottom: 10px;}
+        
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eaeded; text-align: left; }
+        th { background-color: #f8f9fa; color: #2c3e50; font-weight: bold; }
+        tr:hover { background-color: #f4f6f7; }
+        
+        .alert-list { list-style: none; padding: 0; margin: 0; }
+        .alert-list li { background: #fff3f3; border-left: 4px solid #e74c3c; padding: 15px; margin-bottom: 12px; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; display: inline-block; }
+        .badge-red { background-color: #e74c3c; } .badge-dark { background-color: #34495e; }
+        
+        @media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="master-nav">
+        <button class="master-btn active" onclick="switchBase('geral')">🌍 Visão Geral</button>
+        <button class="master-btn" onclick="switchBase('educacao')">📚 Educação</button>
+        <button class="master-btn" onclick="switchBase('saude')">🏥 Saúde</button>
+        <button class="master-btn" onclick="switchBase('prefeitura')">🏗️ Prefeitura / Infra</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Painel de Auditoria de Frota</h1>
+            <p>Cruzamento de Ordens de Serviço vs Faturamento (Trimestre 1 / 2026)</p>
+        </div>
+
+        <div id="view-geral" class="base-view theme-geral active">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('geral', 'dash')">📈 Dashboard Geral</button>
+                <button class="tab-btn" onclick="switchTab('geral', 'plan')">📋 Planilha Unificada</button>
+                <button class="tab-btn" onclick="switchTab('geral', 'rel')">📄 Relatório Executivo</button>
+            </div>
+
+            <div id="geral-dash" class="tab-content active">
+                <div class="kpi-container">
+                    <div class="kpi-card"><h3>Custo Consolidado</h3><div class="value">R$ 1.121.949,97</div><div class="sub-value">Trimestre</div></div>
+                    <div class="kpi-card"><h3>Volume Total</h3><div class="value">168.515,31 L</div><div class="sub-value">Combustível Faturado</div></div>
+                    <div class="kpi-card"><h3>Índice de Rastreio</h3><div class="value" style="color:#e74c3c;">0% (Km Zerado)</div><div class="sub-value">Odômetro Inoperante</div></div>
+                </div>
+                <div class="chart-grid">
+                    <div class="chart-container"><h2>Custo por Unidade (R$)</h2><canvas id="chartGeral1"></canvas></div>
+                    <div class="chart-container"><h2>Distorção Crítica (Capacidade vs Faturado)</h2><canvas id="chartGeral2"></canvas></div>
+                </div>
+            </div>
+
+            <div id="geral-plan" class="tab-content">
+                <h2>Top Distorções Intersecretarias</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Secretaria</th><th>Placa / Veículo</th><th>Autorizador</th><th>Volume Máx (Único)</th><th>Diagnóstico</th></tr></thead>
+                        <tbody>
+                            <tr><td>Prefeitura</td><td>MUK0988 (Sprinter)</td><td>Sidnei Fonseca</td><td><strong style="color:red">308,16 L</strong></td><td>+310% da Capacidade do Tanque</td></tr>
+                            <tr><td>Educação</td><td>EQW8B16 (Ducato)</td><td>Maria de Lourdes</td><td><strong style="color:red">308,16 L</strong></td><td>+285% da Capacidade do Tanque</td></tr>
+                            <tr><td>Saúde</td><td>TNI0B27 (Fiorino)</td><td>Gilberto Barroso</td><td><strong style="color:red">120,00 L</strong></td><td>+118% da Capacidade do Tanque</td></tr>
+                            <tr><td>Educação</td><td>S/ PLACA (Lancha)</td><td>Maria de Lourdes</td><td><strong style="color:orange">200,00 L</strong></td><td>Operação Fluvial S/ Horímetro</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="geral-rel" class="tab-content">
+                <h2>⚠️ Achados Estruturais Consolidados</h2>
+                <ul class="alert-list">
+                    <li><strong>A Tancagem Fantasma:</strong> Identificação clara de que o sistema de autorizações liberta volumes como 308 Litros para vans e 120 Litros para carros pequenos, provando o uso de galões paralelos ou abastecimento de viaturas de terceiros.</li>
+                    <li><strong>Vício Sistêmico (Km: 0):</strong> O campo de quilometragem é ignorado de forma padronizada em 100% das ordens emitidas pelas 3 secretarias analisadas, tornando o município "cego" à eficiência do gasto.</li>
+                    <li><strong>Centralização:</strong> Apenas 4 assinaturas (Gilberto, Maria de Lourdes, Sidnei e Michelle) controlam a libertação de mais de 1 milhão de reais sem conferência física.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="view-educacao" class="base-view theme-edu">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('educacao', 'dash')">📈 Dashboard Educação</button>
+                <button class="tab-btn" onclick="switchTab('educacao', 'plan')">📋 Ordens (Educação)</button>
+                <button class="tab-btn" onclick="switchTab('educacao', 'rel')">📄 Relatório Específico</button>
+            </div>
+
+            <div id="educacao-dash" class="tab-content active">
+                <div class="kpi-container">
+                    <div class="kpi-card"><h3>Autorização</h3><div class="value">Maria de Lourdes</div><div class="sub-value">Assinatura Predominante</div></div>
+                    <div class="kpi-card"><h3>Pico Absurdo</h3><div class="value" style="color:#e74c3c;">308,16 L</div><div class="sub-value">Ducato EQW8B16</div></div>
+                    <div class="kpi-card"><h3>Veículo Fluvial</h3><div class="value">Lancha Onça</div><div class="sub-value">Consumo: 200L/Único</div></div>
+                </div>
+                <div class="chart-grid single">
+                    <div class="chart-container"><h2>Maiores Emissões de Volume Único (L) - Educação</h2><canvas id="chartEdu" style="max-height: 300px;"></canvas></div>
+                </div>
+            </div>
+
+            <div id="educacao-plan" class="tab-content">
+                <h2>Lista de Evidências (SME)</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Data/OS</th><th>Placa / Equipamento</th><th>Motorista</th><th>Volume (L)</th><th>Assinatura</th></tr></thead>
+                        <tbody>
+                            <tr><td>06/02</td><td>EQW8B16 (Ducato M Bus)</td><td>Rodízio</td><td><strong style="color:red">308,16 L</strong></td><td>Maria de Lourdes</td></tr>
+                            <tr><td>11/02</td><td>EQW8B16 (Ducato M Bus)</td><td>Rodízio</td><td><strong style="color:red">308,16 L</strong></td><td>Maria de Lourdes</td></tr>
+                            <tr><td>24/03 (OS 528)</td><td>ODG4634 (Ônibus Azul 50)</td><td>Francis Lucena</td><td>238,97 L</td><td>Maria de Lourdes</td></tr>
+                            <tr><td>09/03 (OS 363)</td><td>S/ PLACA (Lancha Mato Onça)</td><td>Douglas Nunes</td><td>200,00 L</td><td>Maria de Lourdes</td></tr>
+                            <tr><td>23/03 (OS 529)</td><td>SAG5H90 (Ônibus 335)</td><td>Denisson Silva</td><td>150,87 L</td><td>Maria de Lourdes</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="educacao-rel" class="tab-content">
+                <h2>⚠️ Foco de Auditoria: Educação</h2>
+                <ul class="alert-list">
+                    <li><strong>Clonagem de Volume:</strong> O volume exato de 308,16 Litros repete-se em viaturas que não possuem esta capacidade. O padrão matemático exato sugere preenchimento automático sem medição na bomba.</li>
+                    <li><strong>Lancha S/ Placa:</strong> A "Lancha Mato da Onça" consome volumes de 200 litros sem registo de horímetro. Como o odômetro não se aplica a embarcações, o sistema não recolhe o dado de horas navegadas, libertando combustível às cegas.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="view-saude" class="base-view theme-sau">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('saude', 'dash')">📈 Dashboard Saúde</button>
+                <button class="tab-btn" onclick="switchTab('saude', 'plan')">📋 Ordens (Saúde)</button>
+                <button class="tab-btn" onclick="switchTab('saude', 'rel')">📄 Relatório Específico</button>
+            </div>
+
+            <div id="saude-dash" class="tab-content active">
+                <div class="kpi-container">
+                    <div class="kpi-card"><h3>Autorização</h3><div class="value">Gilberto Barroso</div><div class="sub-value">Assinatura Exclusiva</div></div>
+                    <div class="kpi-card"><h3>Anomalia Crítica</h3><div class="value" style="color:#e74c3c;">120,00 L</div><div class="sub-value">Fiorino (Tanque 55L)</div></div>
+                    <div class="kpi-card"><h3>Investigação</h3><div class="value">Motor HIDEA</div><div class="sub-value">Frota Aquática Oculta</div></div>
+                </div>
+                <div class="chart-grid single">
+                    <div class="chart-container"><h2>Distorções em Viaturas Ligeiras (L) - Saúde</h2><canvas id="chartSau" style="max-height: 300px;"></canvas></div>
+                </div>
+            </div>
+
+            <div id="saude-plan" class="tab-content">
+                <h2>Lista de Evidências (FMS)</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Data/OS</th><th>Placa / Equipamento</th><th>Motorista</th><th>Volume (L)</th><th>Assinatura</th></tr></thead>
+                        <tbody>
+                            <tr><td>24/01</td><td>TNI0B27 (Fiat Fiorino)</td><td>Arnaldo Rocha</td><td><strong style="color:red">120,00 L</strong></td><td>Gilberto Barroso</td></tr>
+                            <tr><td>25/01</td><td>TNI0B27 (Fiat Fiorino)</td><td>Arnaldo Rocha</td><td><strong style="color:red">100,00 L</strong></td><td>Gilberto Barroso</td></tr>
+                            <tr><td>26/01</td><td>TNI0B37 (Fiat Fiorino)</td><td>Rodízio</td><td><strong style="color:orange">80,00 L</strong></td><td>Gilberto Barroso</td></tr>
+                            <tr><td>19/03 (OS 1746)</td><td>TNL8J08 (Fiat Scudo)</td><td>Arnaldo Rocha</td><td>61,01 L</td><td>Gilberto Barroso</td></tr>
+                            <tr><td>03/03 (OS 1349)</td><td>S/ PLACA (Motor HIDEA)</td><td>Não Identificado</td><td>S/ Métrica</td><td>Gilberto Barroso</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="saude-rel" class="tab-content">
+                <h2>⚠️ Foco de Auditoria: Saúde</h2>
+                <ul class="alert-list">
+                    <li><strong>Pagando em Dobro:</strong> O abastecimento de 120 e 100 litros em dias sucessivos num Fiat Fiorino (cujo tanque suporta 55L) é fisicamente impossível e constitui o maior alerta de fraude de galões na saúde.</li>
+                    <li><strong>Motor Náutico:</strong> A O.S. nº 1349 liberta combustível para um motor de popa (HIDEA) sem métrica de volume faturada corretamente no sistema e sem horímetro, criando um canal de desvio não rastreável.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="view-prefeitura" class="base-view theme-pref">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('prefeitura', 'dash')">📈 Dashboard Prefeitura</button>
+                <button class="tab-btn" onclick="switchTab('prefeitura', 'plan')">📋 Ordens (Prefeitura)</button>
+                <button class="tab-btn" onclick="switchTab('prefeitura', 'rel')">📄 Relatório Específico</button>
+            </div>
+
+            <div id="prefeitura-dash" class="tab-content active">
+                <div class="kpi-container">
+                    <div class="kpi-card"><h3>Autorizadores</h3><div class="value">Sidnei & Michelle</div><div class="sub-value">Assinaturas Principais</div></div>
+                    <div class="kpi-card"><h3>Pico de Anomalia</h3><div class="value" style="color:#e74c3c;">308,16 L</div><div class="sub-value">Sprinter MUK0988</div></div>
+                    <div class="kpi-card"><h3>Maior Sugador</h3><div class="value">Caminhão QLF0601</div><div class="sub-value">Consumo Constante (249L)</div></div>
+                </div>
+                <div class="chart-grid single">
+                    <div class="chart-container"><h2>Alertas Físicos e Volumes Constantes (L) - Prefeitura</h2><canvas id="chartPref" style="max-height: 300px;"></canvas></div>
+                </div>
+            </div>
+
+            <div id="prefeitura-plan" class="tab-content">
+                <h2>Lista de Evidências (Prefeitura/Infra)</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Data/OS</th><th>Placa / Equipamento</th><th>Motorista</th><th>Volume (L)</th><th>Assinatura</th></tr></thead>
+                        <tbody>
+                            <tr><td>04/02</td><td>MUK0988 (M.Benz Sprinter)</td><td>Rodízio</td><td><strong style="color:red">308,16 L</strong></td><td>Sidnei R. / Michelle</td></tr>
+                            <tr><td>18/03 (OS 842)</td><td>QLF0601 (Caminhão Atron)</td><td>José Francisco</td><td><strong style="color:orange">249,00 L</strong></td><td>Sidnei R. / Michelle</td></tr>
+                            <tr><td>04/03 (OS 715)</td><td>QLF0601 (Caminhão Atron)</td><td>José Francisco</td><td><strong style="color:orange">243,50 L</strong></td><td>Sidnei R. / Michelle</td></tr>
+                            <tr><td>23/03 (OS 880)</td><td>RGW0H34 (VW Polo)</td><td>Administração</td><td><strong style="color:red">47,39 L</strong></td><td>Sidnei R. / Michelle</td></tr>
+                            <tr><td>24/03 (OS 895)</td><td>RGW0H34 (VW Polo)</td><td>Administração</td><td><strong style="color:red">46,00 L</strong></td><td>Sidnei R. / Michelle</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="prefeitura-rel" class="tab-content">
+                <h2>⚠️ Foco de Auditoria: Prefeitura e Infraestrutura</h2>
+                <ul class="alert-list">
+                    <li><strong>Clonagem de Volume (Sprinter):</strong> Assim como na Educação, surge o valor "308,16 L" injetado numa van MUK0988 (capacidade de 75L), demonstrando que o vício de cadastro perpassa múltiplas secretarias.</li>
+                    <li><strong>Esvaziamento do VW Polo:</strong> O veículo RGW0H34 (tanque 50L) esvazia praticamente toda a sua capacidade em menos de 24 horas (47L dia 23, 46L dia 24). Isto exigiria circular centenas de quilómetros no perímetro, padrão impossível para rotinas de gabinete.</li>
+                    <li><strong>Caminhão Sugador:</strong> A máquina QLF0601 atesta regularmente o limite de 240 a 249 litros sem telemetria de acompanhamento, gerando um risco alto de desvio de diesel.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Função do Menu Mestre
+        function switchBase(baseId) {
+            // Atualiza botões superiores
+            document.querySelectorAll('.master-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            // Atualiza a view visível
+            document.querySelectorAll('.base-view').forEach(view => view.classList.remove('active'));
+            document.getElementById('view-' + baseId).classList.add('active');
+        }
+
+        // Função de Sub-Tabs
+        function switchTab(baseId, tabSuffix) {
+            let parentView = document.getElementById('view-' + baseId);
+            
+            // Atualiza botões da tab específica
+            parentView.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            // Atualiza o conteúdo da tab
+            parentView.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(baseId + '-' + tabSuffix).classList.add('active');
+        }
+
+        // Renderização dos Gráficos (Chart.js)
+        window.onload = function() {
+            // GERAL - Donut Custo
+            new Chart(document.getElementById('chartGeral1').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: ['Saúde', 'Prefeitura', 'Educação'], datasets: [{ data: [555350, 307067, 259532], backgroundColor: ['#27ae60', '#8e44ad', '#2980b9'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // GERAL - Distorção
+            new Chart(document.getElementById('chartGeral2').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Sprinter / Ducato', 'Fiat Fiorino'],
+                    datasets: [
+                        { label: 'Cap. Fábrica', data: [80, 55], backgroundColor: '#95a5a6' },
+                        { label: 'Faturado', data: [308.16, 120], backgroundColor: '#e74c3c' }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // EDUCAÇÃO - Volumes
+            new Chart(document.getElementById('chartEdu').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Ducato (EQW8B16)', 'Ônibus (ODG4634)', 'Lancha (S/ Placa)', 'Ônibus (SAG5H90)'],
+                    datasets: [{ label: 'Litros', data: [308.16, 238.97, 200, 150.87], backgroundColor: '#2980b9' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // SAÚDE - Volumes
+            new Chart(document.getElementById('chartSau').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Fiorino (1º Dia)', 'Fiorino (2º Dia)', 'Fiorino 2 (TNI0B37)', 'Scudo (TNL8J08)'],
+                    datasets: [{ label: 'Litros', data: [120, 100, 80, 61.01], backgroundColor: '#27ae60' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // PREFEITURA - Volumes
+            new Chart(document.getElementById('chartPref').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Sprinter (MUK0988)', 'Caminhão (249L)', 'Caminhão (243L)', 'Polo (Dia 1)', 'Polo (Dia 2)'],
+                    datasets: [{ label: 'Litros', data: [308.16, 249, 243.5, 47.39, 46], backgroundColor: '#8e44ad' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+    </script>
+</body>
+</html>
