@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Geral Consolidado - Frota Municipal (Março 2026)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { border-bottom: 2px solid #1e293b; color: #1e293b; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <nav class="bg-slate-800 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tight">Gestão de Frota - Visão Global</h1>
+            <span class="text-sm bg-slate-700 px-3 py-1 rounded-full border border-slate-600">Mês Base: Março / 2026</span>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto mt-6 px-4 bg-white shadow-sm rounded-t-lg">
+        <div class="flex border-b border-gray-200">
+            <button onclick="openTab('dashboard')" id="btn-dashboard" class="tab-btn active px-6 py-3 text-gray-500 hover:text-slate-800 focus:outline-none transition-colors">Comparativo (Gráficos)</button>
+            <button onclick="openTab('relatorio')" id="btn-relatorio" class="tab-btn px-6 py-3 text-gray-500 hover:text-slate-800 focus:outline-none transition-colors">Relatório Executivo Consolidado</button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto mt-4 px-4 mb-12">
+
+        <div id="dashboard" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow p-5 border-l-4 border-slate-700">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">Despesa Total Município</h3>
+                    <p class="text-2xl font-black text-gray-800 mt-1">R$ 376.152,09</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-5 border-l-4 border-slate-700">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">Volume Total</h3>
+                    <p class="text-2xl font-black text-gray-800 mt-1">69.780,81 L</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-5 border-l-4 border-slate-700">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total de Lançamentos</h3>
+                    <p class="text-2xl font-black text-gray-800 mt-1">1.279 <span class="text-sm font-normal text-gray-500">abastecimentos</span></p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-5 border-l-4 border-slate-700">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">Preço Médio Ponderado</h3>
+                    <p class="text-2xl font-black text-gray-800 mt-1">R$ 6,98</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-700 border-b pb-2">Despesa por Secretaria (R$)</h3>
+                    <canvas id="chartDespesas"></canvas>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-700 border-b pb-2">Participação no Consumo (Litros)</h3>
+                    <div class="relative h-64 w-full flex justify-center">
+                        <canvas id="chartVolume"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow p-6 col-span-1">
+                    <h3 class="text-md font-bold mb-4 text-gray-700 border-b pb-2">Preço Médio do Litro (R$)</h3>
+                    <canvas id="chartPrecoMedio"></canvas>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 col-span-2 overflow-x-auto">
+                    <h3 class="text-md font-bold mb-4 text-gray-700 border-b pb-2">Comparativo Lado a Lado</h3>
+                    <table class="w-full text-left border-collapse mt-4">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-sm uppercase">
+                                <th class="py-2 px-4 border-b">Departamento</th>
+                                <th class="py-2 px-4 border-b text-right">Despesa (R$)</th>
+                                <th class="py-2 px-4 border-b text-right">Volume (L)</th>
+                                <th class="py-2 px-4 border-b text-center">Registos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-comparativa" class="text-sm">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="relatorio" class="tab-content">
+            <div class="bg-white rounded-lg shadow p-8">
+                <h2 class="text-2xl font-bold mb-2 text-slate-800">Balanço Municipal de Combustível</h2>
+                <p class="text-gray-500 mb-6 pb-4 border-b">Competência: Março / 2026</p>
+                
+                <div class="space-y-8 text-gray-700">
+                    <p class="text-lg">No mês de março de 2026, o município registrou uma despesa global de <strong>R$ 376.152,09</strong> com o abastecimento da frota e maquinário, consumindo um montante de <strong>69.780,81 litros</strong> distribuídos em 1.279 ordens de abastecimento.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-blue-50 p-5 rounded-lg border border-blue-100">
+                            <h3 class="font-bold text-xl text-blue-800 mb-3 flex items-center">
+                                <span class="w-3 h-3 rounded-full bg-blue-600 inline-block mr-2"></span> Saúde
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-2">Maior impacto na despesa devido à alta rotatividade diária de veículos leves e ambulâncias.</p>
+                            <ul class="text-sm space-y-1">
+                                <li><strong>Custo:</strong> R$ 213.369,25 <span class="text-xs text-gray-500">(56,7%)</span></li>
+                                <li><strong>Consumo:</strong> 31.052,18 L</li>
+                                <li><strong>Preço Médio:</strong> R$ 6,88 /L</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-green-50 p-5 rounded-lg border border-green-100">
+                            <h3 class="font-bold text-xl text-green-800 mb-3 flex items-center">
+                                <span class="w-3 h-3 rounded-full bg-green-600 inline-block mr-2"></span> Educação
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-2">Consumo fortemente atrelado à frota pesada (ônibus escolares) com rotas fixas no município.</p>
+                            <ul class="text-sm space-y-1">
+                                <li><strong>Custo:</strong> R$ 97.811,87 <span class="text-xs text-gray-500">(26,0%)</span></li>
+                                <li><strong>Consumo:</strong> 22.025,81 L</li>
+                                <li><strong>Preço Médio:</strong> R$ 7,05 /L</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-purple-50 p-5 rounded-lg border border-purple-100">
+                            <h3 class="font-bold text-xl text-purple-800 mb-3 flex items-center">
+                                <span class="w-3 h-3 rounded-full bg-purple-600 inline-block mr-2"></span> Prefeitura
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-2">Forte incidência de maquinário pesado (escavadeiras e tratores) para obras e manutenção.</p>
+                            <ul class="text-sm space-y-1">
+                                <li><strong>Custo:</strong> R$ 64.970,97 <span class="text-xs text-gray-500">(17,3%)</span></li>
+                                <li><strong>Consumo:</strong> 16.702,82 L</li>
+                                <li><strong>Preço Médio:</strong> R$ 7,03 /L</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.getElementById('btn-' + tabName).classList.add('active');
+        }
+
+        // DADOS ESTRUTURADOS DE MARÇO PARA ALIMENTAR O DASHBOARD
+        const dadosGerais = [
+            {
+                departamento: "Saúde",
+                despesa: 213369.25,
+                volume: 31052.18,
+                precoMedio: 6.88,
+                registos: 781,
+                corPrincipal: '#2563eb', // Blue
+                corFundo: 'rgba(37, 99, 235, 0.2)'
+            },
+            {
+                departamento: "Educação",
+                despesa: 97811.87,
+                volume: 22025.81,
+                precoMedio: 7.05,
+                registos: 296,
+                corPrincipal: '#16a34a', // Green
+                corFundo: 'rgba(22, 163, 74, 0.2)'
+            },
+            {
+                departamento: "Prefeitura",
+                despesa: 64970.97,
+                volume: 16702.82,
+                precoMedio: 7.03,
+                registos: 202,
+                corPrincipal: '#9333ea', // Purple
+                corFundo: 'rgba(147, 51, 234, 0.2)'
+            }
+        ];
+
+        // Extraindo arrays para o Chart.js
+        const labels = dadosGerais.map(d => d.departamento);
+        const despesas = dadosGerais.map(d => d.despesa);
+        const volumes = dadosGerais.map(d => d.volume);
+        const precos = dadosGerais.map(d => d.precoMedio);
+        const coresBorder = dadosGerais.map(d => d.corPrincipal);
+        const coresBg = dadosGerais.map(d => d.corFundo);
+
+        // 1. Gráfico de Despesas (Barra Horizontal)
+        new Chart(document.getElementById('chartDespesas').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Despesa Total (R$)',
+                    data: despesas,
+                    backgroundColor: coresPrincipal = ['#3b82f6', '#22c55e', '#a855f7'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Barra horizontal para fácil leitura de valores grandes
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true } }
+            }
+        });
+
+        // 2. Gráfico de Volume (Doughnut)
+        new Chart(document.getElementById('chartVolume').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: volumes,
+                    backgroundColor: ['#3b82f6', '#22c55e', '#a855f7'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // 3. Gráfico de Preço Médio (Barra)
+        new Chart(document.getElementById('chartPrecoMedio').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Preço Médio (R$)',
+                    data: precos,
+                    backgroundColor: coresBg,
+                    borderColor: coresBorder,
+                    borderWidth: 2,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { 
+                        min: 6.00, // Começa em 6 para evidenciar a pequena variação
+                        title: { display: true, text: 'Reais (R$)' } 
+                    } 
+                }
+            }
+        });
+
+        // 4. Popular Tabela Lado a Lado
+        const tbody = document.getElementById('tabela-comparativa');
+        dadosGerais.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.className = "border-b hover:bg-slate-50";
+            tr.innerHTML = `
+                <td class="py-3 px-4 font-bold" style="color: ${d.corPrincipal}">${d.departamento}</td>
+                <td class="py-3 px-4 text-right font-medium">R$ ${d.despesa.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                <td class="py-3 px-4 text-right">${d.volume.toLocaleString('pt-BR', {minimumFractionDigits: 2})} L</td>
+                <td class="py-3 px-4 text-center text-gray-500">${d.registos}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    </script>
+</body>
+</html>
