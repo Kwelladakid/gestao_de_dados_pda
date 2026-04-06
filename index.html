@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Prefeito - Gestão de Frota</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-slate-900 text-white shadow-md relative z-20">
+        <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-black tracking-tight">Portal de Transparência e Controle</h1>
+                <p class="text-slate-400 text-sm mt-1">Gestão de Abastecimento e Eficiência da Frota Municipal</p>
+            </div>
+            
+            <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                <label for="mes-seletor" class="text-sm font-medium text-slate-300">Competência:</label>
+                <div class="relative">
+                    <select id="mes-seletor" onchange="atualizarLinks()" class="appearance-none bg-slate-800 border border-slate-600 text-blue-400 text-sm font-bold rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer transition-colors hover:bg-slate-700">
+                        <option value="marco" selected>Março / 2026</option>
+                        <option value="abril">Abril / 2026</option>
+                        <option value="maio">Maio / 2026</option>
+                        <option value="junho">Junho / 2026</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-6 py-12 w-full relative z-10">
+        
+        <div class="mb-10 text-center md:text-left">
+            <h2 class="text-3xl font-bold text-slate-800">Painéis de Indicadores</h2>
+            <p class="text-slate-500 mt-2">Selecione abaixo o departamento ou o relatório cruzado que deseja analisar para o mês de <strong id="mes-texto-destaque" class="text-blue-600 capitalize">março</strong>.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <a id="link-geral" href="painel_geral_marco.html" class="group block bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-200 overflow-hidden flex flex-col">
+                <div class="h-3 bg-slate-800 w-full group-hover:bg-blue-500 transition-colors"></div>
+                <div class="p-6 flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Visão Global</h3>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded font-semibold">Geral</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-6">Comparativo financeiro e de volume consumido entre todas as secretarias (Saúde, Educação e Prefeitura).</p>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 text-sm font-semibold text-blue-600 group-hover:text-blue-700 flex justify-between items-center">
+                    Acessar Dashboard
+                    <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </a>
+
+            <a id="link-eficiencia" href="dashboard_eficiencia_frota_marco.html" class="group block bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-200 overflow-hidden flex flex-col">
+                <div class="h-3 bg-rose-500 w-full group-hover:bg-rose-600 transition-colors"></div>
+                <div class="p-6 flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-600 transition-colors">Eficiência (Km/L)</h3>
+                        <span class="bg-rose-100 text-rose-700 text-xs px-2 py-1 rounded font-semibold">Auditoria</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-6">Cruzamento da telemetria GPS (Alsat) com ordens de abastecimento. Identificação de veículos fora do padrão.</p>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 text-sm font-semibold text-rose-600 group-hover:text-rose-700 flex justify-between items-center">
+                    Acessar Dashboard
+                    <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </a>
+
+            <a id="link-saude" href="painel_frota_saude_marco.html" class="group block bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-200 overflow-hidden flex flex-col">
+                <div class="h-3 bg-blue-500 w-full group-hover:bg-blue-600 transition-colors"></div>
+                <div class="p-6 flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Fundo de Saúde</h3>
+                        <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-semibold">Setorial</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-6">Análise detalhada dos abastecimentos de ambulâncias e veículos leves da Secretaria de Saúde.</p>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 text-sm font-semibold text-blue-600 group-hover:text-blue-700 flex justify-between items-center">
+                    Acessar Dashboard
+                    <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </a>
+
+            <a id="link-educacao" href="painel_frota_educacao_marco.html" class="group block bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-200 overflow-hidden flex flex-col">
+                <div class="h-3 bg-green-500 w-full group-hover:bg-green-600 transition-colors"></div>
+                <div class="p-6 flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-green-600 transition-colors">Educação</h3>
+                        <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-semibold">Setorial</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-6">Consumo da frota pesada, com destaque para a operação dos ônibus escolares e micro-ônibus.</p>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 text-sm font-semibold text-green-600 group-hover:text-green-700 flex justify-between items-center">
+                    Acessar Dashboard
+                    <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </a>
+
+            <a id="link-prefeitura" href="painel_frota_prefeitura_marco.html" class="group block bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-200 overflow-hidden flex flex-col">
+                <div class="h-3 bg-purple-500 w-full group-hover:bg-purple-600 transition-colors"></div>
+                <div class="p-6 flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Prefeitura</h3>
+                        <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-semibold">Setorial</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-6">Custos direcionados principalmente ao maquinário pesado, retroescavadeiras e tratores da administração.</p>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 text-sm font-semibold text-purple-600 group-hover:text-purple-700 flex justify-between items-center">
+                    Acessar Dashboard
+                    <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <script>
+        function atualizarLinks() {
+            // Pega o valor selecionado no dropdown (ex: 'marco', 'abril')
+            const mesSelecionado = document.getElementById('mes-seletor').value;
+            
+            // Atualiza o texto na tela para refletir o mês escolhido
+            document.getElementById('mes-texto-destaque').innerText = mesSelecionado;
+
+            // Atualiza dinamicamente o link (href) de cada cartão
+            document.getElementById('link-geral').href = `painel_geral_${mesSelecionado}.html`;
+            document.getElementById('link-eficiencia').href = `dashboard_eficiencia_frota_${mesSelecionado}.html`;
+            document.getElementById('link-saude').href = `painel_frota_saude_${mesSelecionado}.html`;
+            document.getElementById('link-educacao').href = `painel_frota_educacao_${mesSelecionado}.html`;
+            document.getElementById('link-prefeitura').href = `painel_frota_prefeitura_${mesSelecionado}.html`;
+        }
+    </script>
+
+</body>
+</html>
