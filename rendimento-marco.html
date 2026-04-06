@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Eficiência da Frota - Março 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { border-bottom: 2px solid #0f172a; color: #0f172a; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans pb-12">
+
+    <nav class="bg-slate-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c-1.105 0-2-.895-2-2V7c0-1.105.895-2 2-2h12c1.105 0 2 .895 2 2v10c0 1.105-.895 2-2 2H9z"></path></svg>
+                <h1 class="text-xl font-bold tracking-tight">Inteligência de Frota - Rendimento Km/L</h1>
+            </div>
+            <span class="text-xs bg-slate-800 px-3 py-1 rounded-full border border-slate-700">Março / 2026</span>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto mt-6 px-4 bg-white shadow-sm rounded-t-lg">
+        <div class="flex border-b border-gray-200">
+            <button onclick="openTab('dashboard')" id="btn-dashboard" class="tab-btn active px-6 py-3 text-sm text-gray-500 hover:text-slate-800 focus:outline-none transition-colors uppercase tracking-wider">Dashboard Gráfico</button>
+            <button onclick="openTab('relatorio')" id="btn-relatorio" class="tab-btn px-6 py-3 text-sm text-gray-500 hover:text-slate-800 focus:outline-none transition-colors uppercase tracking-wider">Relatório de Alertas</button>
+            <button onclick="openTab('planilha')" id="btn-planilha" class="tab-btn px-6 py-3 text-sm text-gray-500 hover:text-slate-800 focus:outline-none transition-colors uppercase tracking-wider">Planilha Analítica</button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto mt-4 px-4">
+
+        <div id="dashboard" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow p-5 border-l-4 border-slate-400">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">Veículos Cruzados</h3>
+                    <p class="text-3xl font-black text-gray-800 mt-1" id="kpi-total">-</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-5 border-l-4 border-emerald-500">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">Dentro do Esperado</h3>
+                    <p class="text-3xl font-black text-gray-800 mt-1" id="kpi-dentro">-</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-5 border-l-4 border-rose-500">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">Abaixo do Esperado (Alerta)</h3>
+                    <p class="text-3xl font-black text-rose-600 mt-1" id="kpi-abaixo">-</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-5 border-l-4 border-blue-500">
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">Acima do Esperado</h3>
+                    <p class="text-3xl font-black text-gray-800 mt-1" id="kpi-acima">-</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow p-6 col-span-1">
+                    <h3 class="text-md font-bold mb-4 text-gray-700 border-b pb-2">Distribuição de Rendimento</h3>
+                    <div class="relative h-64 w-full flex justify-center">
+                        <canvas id="chartStatus"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 col-span-2">
+                    <h3 class="text-md font-bold mb-4 text-gray-700 border-b pb-2">Top 5 Piores Rendimentos (Km/L)</h3>
+                    <canvas id="chartPiores"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="relatorio" class="tab-content">
+            <div class="bg-white rounded-lg shadow p-8">
+                <h2 class="text-2xl font-bold mb-2 text-slate-800">Relatório Executivo de Rendimento</h2>
+                <p class="text-gray-500 mb-6 pb-4 border-b">Avaliação de Eficiência (Km/Litro) - Março/2026</p>
+                
+                <div class="space-y-6 text-gray-700">
+                    <p class="text-lg">Foram cruzados com sucesso <strong>44 veículos</strong> que possuíam registros simultâneos de abastecimento nas ordens de serviço e de quilometragem percorrida no sistema Alsat. Deste total, <strong>13 veículos (29%)</strong> apresentaram rendimento <strong>Abaixo do Esperado</strong>.</p>
+                    
+                    <div class="bg-rose-50 border border-rose-200 rounded-lg p-5">
+                        <h3 class="font-bold text-lg text-rose-800 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                            Alertas Críticos Identificados (Saúde e Educação)
+                        </h3>
+                        <p class="text-sm mb-4">Os veículos listados abaixo apresentam um consumo de combustível excessivo para a distância percorrida. É recomendada a revisão mecânica imediata ou a auditoria das rotas:</p>
+                        <ul class="list-disc pl-6 space-y-2 text-sm">
+                            <li><strong>MMC/L200 TRITON (NLV-9215):</strong> Rodou apenas 20 km no mês inteiro, mas consumiu 200 litros (0.1 Km/L). Possível erro de registro, desvio, ou veículo ocioso sendo abastecido.</li>
+                            <li><strong>FIAT/MOBI LIKE (SAE-8B71):</strong> Consumiu 506 litros para rodar 346 km, gerando 0.68 Km/L. Inaceitável para frota leve.</li>
+                            <li><strong>RENAULT/MASTER REVES A (SAE3J78):</strong> Veículo que mais viajou na frota (6.820 km), porém consumindo demasiados 1.821 litros (3.74 Km/L). O alto volume mascara uma baixa eficiência do motor.</li>
+                            <li><strong>ÔNIBUS BRANCO Educação (PFP-0F22):</strong> Rodou 138 km com 268 litros (0.51 Km/L).</li>
+                            <li><strong>ÔNIBUS 11 Educação (ORK-9681):</strong> Eficiência muito baixa de apenas 1.64 Km/L.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-5">
+                        <h3 class="font-bold text-lg text-emerald-800 mb-2">Pontos Positivos</h3>
+                        <p class="text-sm">A frota leve modelo <strong>FIAT/MOBI</strong> e <strong>FIAT/ARGO</strong> apresentou desempenhos extremamente saudáveis quando não sofre de anomalias, com médias variando entre <strong>10.3 a 11.6 Km/L</strong> em rotas intermunicipais.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="planilha" class="tab-content">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-5 bg-slate-50 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-800">Cruzamento: Abastecimento vs. Telemetria</h3>
+                    <input type="text" id="searchInput" onkeyup="filtrarTabela()" placeholder="Buscar placa, veículo ou secretaria..." class="px-3 py-2 border rounded text-sm w-64 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 uppercase text-xs tracking-wider border-b">
+                                <th class="py-3 px-4">Secretaria</th>
+                                <th class="py-3 px-4">Placa (Abast.)</th>
+                                <th class="py-3 px-4">Veículo Rastreado</th>
+                                <th class="py-3 px-4 text-right">Km Total</th>
+                                <th class="py-3 px-4 text-right">Litros</th>
+                                <th class="py-3 px-4 text-right">Km/L</th>
+                                <th class="py-3 px-4 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-dados" class="text-gray-700 text-sm">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Lógica de Abas
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.getElementById('btn-' + tabName).classList.add('active');
+        }
+
+        // DADOS ESTRUTURADOS DE RENDIMENTO (44 VEÍCULOS)
+        const dadosRendimento = [{"Secretaria": "Sa\u00fade", "Placa_Combustivel": "TNL8J08", "Modelo": "I/FIAT SCUDO MOD AMB", "Veiculo_Rastreador": "SCUDO TNL-8J08-SMS", "Km_Total": 9975.42, "Litros_Consumidos": 1550.48, "Km_Por_Litro": 6.43, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "RGV7B92", "Modelo": "FIAT/MOBI LIKE", "Veiculo_Rastreador": "RGV-7B92 SMS", "Km_Total": 9021.22, "Litros_Consumidos": 868.97, "Km_Por_Litro": 10.38, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "RGV7C22", "Modelo": "FIAT/MOBI LIKE", "Veiculo_Rastreador": "RGV7C22 SMS", "Km_Total": 7325.0, "Litros_Consumidos": 901.86, "Km_Por_Litro": 8.12, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "SAE3J78", "Modelo": "RENAULT/MASTER REVES A", "Veiculo_Rastreador": "SAE3J78 RENAULT/MASTER REVES A - SMS", "Km_Total": 6820.94, "Litros_Consumidos": 1821.96, "Km_Por_Litro": 3.74, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "RGV7C32", "Modelo": "FIAT/MOBI LIKE", "Veiculo_Rastreador": "RGV-7C32 SMS", "Km_Total": 6672.7, "Litros_Consumidos": 639.33, "Km_Por_Litro": 10.44, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "SAE2I31", "Modelo": "FIAT/ARGO DRIVE 1.0", "Veiculo_Rastreador": "SAE-2131 SMS", "Km_Total": 6270.12, "Litros_Consumidos": 538.27, "Km_Por_Litro": 11.65, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "SAE8B41", "Modelo": "FIAT/MOBI LIKE", "Veiculo_Rastreador": "SAE-8B41 SMS", "Km_Total": 4814.86, "Litros_Consumidos": 621.84, "Km_Por_Litro": 7.74, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "SAE2I21", "Modelo": "FIAT/ARGO DRIVE 1.0", "Veiculo_Rastreador": "SAE-2121 SMS", "Km_Total": 4773.86, "Litros_Consumidos": 619.46, "Km_Por_Litro": 7.71, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "SAH7F58", "Modelo": "FIAT/TORO FREED AT9 4X4", "Veiculo_Rastreador": "SAH-7F58 TORO SMS", "Km_Total": 4753.84, "Litros_Consumidos": 771.34, "Km_Por_Litro": 6.16, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "QTT0649", "Modelo": "MMC/L200 TRITON SPT GLX", "Veiculo_Rastreador": "QTT-0649 L200 SMS", "Km_Total": 3325.92, "Litros_Consumidos": 539.31, "Km_Por_Litro": 6.17, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWG6908", "Modelo": "\u00d4NIBUS 21", "Veiculo_Rastreador": "QWG-6908 21", "Km_Total": 2924.73, "Litros_Consumidos": 1061.08, "Km_Por_Litro": 2.76, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Prefeitura", "Placa_Combustivel": "SCO4B35", "Modelo": "CAMINH\u00c3O PIPA IVECO TECTOR 24-280", "Veiculo_Rastreador": "SCO-4B35 PIPA", "Km_Total": 2597.58, "Litros_Consumidos": 1438.5, "Km_Por_Litro": 1.81, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "RGV7C12", "Modelo": "FIAT/MOBI LIKE", "Veiculo_Rastreador": "RGV-7C12 SMS", "Km_Total": 2471.21, "Litros_Consumidos": 356.77, "Km_Por_Litro": 6.93, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWL6H17", "Modelo": "\u00d4NIBUS 02", "Veiculo_Rastreador": "QWL-6H17 02", "Km_Total": 2392.96, "Litros_Consumidos": 653.65, "Km_Por_Litro": 3.66, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "ORL0791", "Modelo": "\u00d4NIBUS 12", "Veiculo_Rastreador": "ORL-0791 12", "Km_Total": 2320.1, "Litros_Consumidos": 1250.55, "Km_Por_Litro": 1.86, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWL6I27", "Modelo": "\u00d4NIBUS 04", "Veiculo_Rastreador": "QWL-6127 04", "Km_Total": 2311.13, "Litros_Consumidos": 501.81, "Km_Por_Litro": 4.61, "Status_Rendimento": "Acima do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "NPV9H72", "Modelo": "branco", "Veiculo_Rastreador": "NPV-9H72", "Km_Total": 2144.79, "Litros_Consumidos": 704.07, "Km_Por_Litro": 3.05, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWL6H07", "Modelo": "\u00d4NIBUS 09", "Veiculo_Rastreador": "QWL-6H07 09", "Km_Total": 2097.56, "Litros_Consumidos": 584.66, "Km_Por_Litro": 3.59, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "ORE5536", "Modelo": "\u00d4NIBUS 14", "Veiculo_Rastreador": "ORE-5536 14", "Km_Total": 1916.23, "Litros_Consumidos": 396.54, "Km_Por_Litro": 4.83, "Status_Rendimento": "Acima do Esperado"}, {"Secretaria": "Prefeitura", "Placa_Combustivel": "SAD6H62", "Modelo": "CAMINH\u00c3O PIPA IVECO ATTACK 170E21", "Veiculo_Rastreador": "SAD-6H62 PIPA", "Km_Total": 1876.63, "Litros_Consumidos": 1192.67, "Km_Por_Litro": 1.57, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "SAF9I50", "Modelo": "FIAT/MOBI LIKE", "Veiculo_Rastreador": "SAF-9150 SMS", "Km_Total": 1673.8, "Litros_Consumidos": 374.79, "Km_Por_Litro": 4.47, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWL6H97", "Modelo": "\u00d4NIBUS 03", "Veiculo_Rastreador": "QWL-6H97 03", "Km_Total": 1660.33, "Litros_Consumidos": 511.36, "Km_Por_Litro": 3.25, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "SAG5H60", "Modelo": "\u00d4NIBUS 378", "Veiculo_Rastreador": "378", "Km_Total": 1630.55, "Litros_Consumidos": 536.16, "Km_Por_Litro": 3.04, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Prefeitura", "Placa_Combustivel": "QLF0601", "Modelo": "CAMINH\u00c3O PIPA MERCEDES ATRON 2729", "Veiculo_Rastreador": "QLF-0601 PIPA", "Km_Total": 1625.0, "Litros_Consumidos": 1105.91, "Km_Por_Litro": 1.47, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWL6H37", "Modelo": "\u00d4NIBUS 07", "Veiculo_Rastreador": "QWL-6H37 07", "Km_Total": 1612.15, "Litros_Consumidos": 338.96, "Km_Por_Litro": 4.76, "Status_Rendimento": "Acima do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "SAG5H90", "Modelo": "\u00d4NIBUS 335", "Veiculo_Rastreador": "335", "Km_Total": 1522.56, "Litros_Consumidos": 650.63, "Km_Por_Litro": 2.34, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Prefeitura", "Placa_Combustivel": "SAD7J45", "Modelo": "CAMINH\u00c3O PIPA IVECO", "Veiculo_Rastreador": "SAD-7J45 PIPA", "Km_Total": 1439.69, "Litros_Consumidos": 1009.85, "Km_Por_Litro": 1.43, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWL6I17", "Modelo": "\u00d4NIBUS 01", "Veiculo_Rastreador": "QWL-6117 01", "Km_Total": 1351.66, "Litros_Consumidos": 469.98, "Km_Por_Litro": 2.88, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "OFE9B05", "Modelo": "ONIBUS", "Veiculo_Rastreador": "OFE-9B05", "Km_Total": 1349.94, "Litros_Consumidos": 773.17, "Km_Por_Litro": 1.75, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "ORE5496", "Modelo": "\u00d4NIBUS 15", "Veiculo_Rastreador": "ORE-5496 15", "Km_Total": 1198.54, "Litros_Consumidos": 432.53, "Km_Por_Litro": 2.77, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWL2F98", "Modelo": "\u00d4NIBUS 08", "Veiculo_Rastreador": "QWK-2F98 08", "Km_Total": 1155.53, "Litros_Consumidos": 401.82, "Km_Por_Litro": 2.88, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Prefeitura", "Placa_Combustivel": "RGT8F34", "Modelo": "CAMINH\u00c3O IVECO 30-130 (PAA)", "Veiculo_Rastreador": "PDA NOVO", "Km_Total": 1134.51, "Litros_Consumidos": 398.66, "Km_Por_Litro": 2.85, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Prefeitura", "Placa_Combustivel": "QOL3197", "Modelo": "CAMINH\u00c3O PIPA FORD CARGO 2429", "Veiculo_Rastreador": "QOL-3197 PIPA", "Km_Total": 1075.43, "Litros_Consumidos": 704.45, "Km_Por_Litro": 1.53, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWG2598", "Modelo": "\u00d4NIBUS 20", "Veiculo_Rastreador": "QWG-2598 20", "Km_Total": 854.65, "Litros_Consumidos": 370.73, "Km_Por_Litro": 2.31, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "PDN7D14", "Modelo": "MERCEDES BENZ SECRETARIA", "Veiculo_Rastreador": "PDN-7D14 SPRINTER", "Km_Total": 849.83, "Litros_Consumidos": 247.05, "Km_Por_Litro": 3.44, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "ORK9681", "Modelo": "\u00d4NIBUS 11", "Veiculo_Rastreador": "ORK-9681 11", "Km_Total": 847.96, "Litros_Consumidos": 517.68, "Km_Por_Litro": 1.64, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "OFH0B55", "Modelo": "MPOLO TORINO U", "Veiculo_Rastreador": "OFH-0B55", "Km_Total": 762.59, "Litros_Consumidos": 176.21, "Km_Por_Litro": 4.33, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QWL6G17", "Modelo": "\u00d4NIBUS 05", "Veiculo_Rastreador": "QWL-6G17 05", "Km_Total": 632.2, "Litros_Consumidos": 130.31, "Km_Por_Litro": 4.85, "Status_Rendimento": "Acima do Esperado"}, {"Secretaria": "Prefeitura", "Placa_Combustivel": "QLD0149", "Modelo": "CAMINH\u00c3O PIPA", "Veiculo_Rastreador": "QLD-0149 PIPA", "Km_Total": 608.3, "Litros_Consumidos": 263.34, "Km_Por_Litro": 2.31, "Status_Rendimento": "Dentro do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "ORK3427", "Modelo": "I/VW AMAROK CD 4X4 S", "Veiculo_Rastreador": "ORK-3427 SMS AMAROK", "Km_Total": 530.93, "Litros_Consumidos": 200.0, "Km_Por_Litro": 2.65, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "QLA7142", "Modelo": "\u00d4NIBUS 19", "Veiculo_Rastreador": "QLA-7142 19", "Km_Total": 369.4, "Litros_Consumidos": 73.36, "Km_Por_Litro": 5.04, "Status_Rendimento": "Acima do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "SAE8B71", "Modelo": "FIAT/MOBI LIKE", "Veiculo_Rastreador": "SAE-8B71 SMS", "Km_Total": 346.45, "Litros_Consumidos": 506.29, "Km_Por_Litro": 0.68, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Educa\u00e7\u00e3o", "Placa_Combustivel": "PFP0F22", "Modelo": "ONIBUS BRANCO", "Veiculo_Rastreador": "PFP-0F22", "Km_Total": 138.27, "Litros_Consumidos": 268.62, "Km_Por_Litro": 0.51, "Status_Rendimento": "Abaixo do Esperado"}, {"Secretaria": "Sa\u00fade", "Placa_Combustivel": "NLV9215", "Modelo": "MMC/L200 TRITON SPT GL", "Veiculo_Rastreador": "NLV-9215 L200 SMS", "Km_Total": 20.05, "Litros_Consumidos": 200.68, "Km_Por_Litro": 0.1, "Status_Rendimento": "Abaixo do Esperado"}];
+
+        // Calcular KPIs Iniciais
+        let qtdDentro = 0, qtdAbaixo = 0, qtdAcima = 0;
+        dadosRendimento.forEach(d => {
+            if (d.Status_Rendimento === "Dentro do Esperado") qtdDentro++;
+            if (d.Status_Rendimento === "Abaixo do Esperado") qtdAbaixo++;
+            if (d.Status_Rendimento === "Acima do Esperado") qtdAcima++;
+        });
+
+        document.getElementById('kpi-total').innerText = dadosRendimento.length;
+        document.getElementById('kpi-dentro').innerText = qtdDentro;
+        document.getElementById('kpi-abaixo').innerText = qtdAbaixo;
+        document.getElementById('kpi-acima').innerText = qtdAcima;
+
+        // Gráfico 1: Status Geral (Doughnut)
+        new Chart(document.getElementById('chartStatus').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Dentro do Esperado', 'Abaixo (Alerta)', 'Acima (Excelente)'],
+                datasets: [{
+                    data: [qtdDentro, qtdAbaixo, qtdAcima],
+                    backgroundColor: ['#10b981', '#f43f5e', '#3b82f6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        // Gráfico 2: Piores (Bar Horizontal)
+        const piores = dadosRendimento.filter(d => d.Status_Rendimento === "Abaixo do Esperado")
+                                      .sort((a,b) => a.Km_Por_Litro - b.Km_Por_Litro).slice(0, 5);
+        new Chart(document.getElementById('chartPiores').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: piores.map(d => d.Placa_Combustivel),
+                datasets: [{
+                    label: 'Rendimento (Km/Litro)',
+                    data: piores.map(d => d.Km_Por_Litro),
+                    backgroundColor: '#f43f5e',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { x: { title: { display: true, text: 'Km / Litro' } } }
+            }
+        });
+
+        // Preencher Tabela
+        const tbody = document.getElementById('tabela-dados');
+        function renderTabela(dados) {
+            tbody.innerHTML = '';
+            dados.forEach(linha => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-200 hover:bg-slate-50 transition-colors";
+                
+                // Definir cor do badge de status
+                let badgeColor = "bg-emerald-100 text-emerald-800";
+                if (linha.Status_Rendimento === "Abaixo do Esperado") badgeColor = "bg-rose-100 text-rose-800 font-bold";
+                if (linha.Status_Rendimento === "Acima do Esperado") badgeColor = "bg-blue-100 text-blue-800";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 whitespace-nowrap">${linha.Secretaria}</td>
+                    <td class="py-3 px-4 font-bold text-slate-800">${linha.Placa_Combustivel}</td>
+                    <td class="py-3 px-4 text-xs text-gray-500">${linha.Veiculo_Rastreador}</td>
+                    <td class="py-3 px-4 text-right">${linha.Km_Total.toLocaleString('pt-BR')} km</td>
+                    <td class="py-3 px-4 text-right">${linha.Litros_Consumidos.toLocaleString('pt-BR')} L</td>
+                    <td class="py-3 px-4 text-right font-semibold">${linha.Km_Por_Litro.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="px-2 py-1 rounded-full text-xs ${badgeColor}">${linha.Status_Rendimento}</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        renderTabela(dadosRendimento);
+
+        // Filtro de Busca
+        function filtrarTabela() {
+            const termo = document.getElementById('searchInput').value.toLowerCase();
+            const dadosFiltrados = dadosRendimento.filter(d => 
+                d.Placa_Combustivel.toLowerCase().includes(termo) ||
+                d.Veiculo_Rastreador.toLowerCase().includes(termo) ||
+                d.Secretaria.toLowerCase().includes(termo)
+            );
+            renderTabela(dadosFiltrados);
+        }
+    </script>
+</body>
+</html>
